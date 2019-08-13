@@ -17,11 +17,13 @@ TOP = $(PWD)
 SHELL = /bin/bash
 PATCH = patch -b -N
 UNZIP = unzip -q -o
-VENDOR_SDK_ZIP = $(VENDOR_SDK_ZIP_$(VENDOR_SDK))
-VENDOR_SDK_DIR = $(VENDOR_SDK_DIR_$(VENDOR_SDK))
+VENDOR_SDK_ZIP =
+# VENDOR_SDK_ZIP = $(VENDOR_SDK_ZIP_$(VENDOR_SDK))
+# VENDOR_SDK_DIR = $(VENDOR_SDK_DIR_$(VENDOR_SDK))
+VENDOR_SDK_DIR = ESP8266_NONOS_SDK-2.1.1
 
-VENDOR_SDK_ZIP_2.1.1 = ESP8266_NONOS_SDK-2.1.1.zip
-VENDOR_SDK_DIR_2.1.1 = ESP8266_NONOS_SDK-2.1.1
+# VENDOR_SDK_ZIP_2.1.1 = ESP8266_NONOS_SDK-2.1.1.zip
+# VENDOR_SDK_DIR_2.1.1 = ESP8266_NONOS_SDK-2.1.1
 
 all: esptool libcirom standalone sdk sdk_patch $(TOOLCHAIN)/xtensa-lx106-elf/sysroot/usr/lib/libhal.a $(TOOLCHAIN)/bin/xtensa-lx106-elf-gcc lwip
 	@echo
@@ -124,16 +126,17 @@ _libhal:
 sdk: $(VENDOR_SDK_DIR)/.dir
 	ln -snf $(VENDOR_SDK_DIR) sdk
 
-$(VENDOR_SDK_DIR)/.dir: $(VENDOR_SDK_ZIP)
-	$(UNZIP) $^
-	-mv License $(VENDOR_SDK_DIR)
+$(VENDOR_SDK_DIR)/.dir: #$(VENDOR_SDK_ZIP)
+	echo $(VENDOR_SDK_DIR)
+	git clone --depth 1 -b 2.1.1 https://github.com/homebots/ESP8266_NONOS_SDK $(VENDOR_SDK_DIR)
 	touch $@
+	# $(UNZIP) $^
+	# -mv License $(VENDOR_SDK_DIR)
 
-$(VENDOR_SDK_DIR_2.1.1)/.dir:
-	echo $(VENDOR_SDK_DIR_2.1.1)
-	git clone --depth 1 -b 2.1.1 https://github.com/homebots/ESP8266_NONOS_SDK $(VENDOR_SDK_DIR_2.1.1)
-	(cd $(VENDOR_SDK_DIR_2.1.1);
-	touch $@
+# $(VENDOR_SDK_DIR_2.1.1)/.dir:
+# 	echo $(VENDOR_SDK_DIR_2.1.1)
+# 	git clone --depth 1 -b 2.1.1 https://github.com/homebots/ESP8266_NONOS_SDK $(VENDOR_SDK_DIR_2.1.1)
+# 	touch $@
 
 sdk_patch: $(VENDOR_SDK_DIR)/.dir .sdk_patch_$(VENDOR_SDK)
 
@@ -161,11 +164,9 @@ ifeq ($(STANDALONE),y)
 	    $(TOOLCHAIN)/xtensa-lx106-elf/sysroot/usr/include/
 endif
 
-
-ESP8266_NONOS_SDK-2.1.0.zip:
-	wget --content-disposition "https://github.com/espressif/ESP8266_NONOS_SDK/archive/v2.1.0.zip"
-# The only change wrt to ESP8266_NONOS_SDK_V2.0.0_16_07_19.zip is licensing blurb in source/
-# header files. Libs are the same (and patch is required just the same).
+# ESP8266_NONOS_SDK-2.1.1.zip:
+	# echo $(VENDOR_SDK_DIR_2.1.1)
+# wget --content-disposition "https://github.com/espressif/ESP8266_NONOS_SDK/archive/v2.1.0.zip"
 
 FRM_ERR_PATCH.rar:
 	wget --content-disposition "http://bbs.espressif.com/download/file.php?id=10"
