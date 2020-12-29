@@ -1,28 +1,24 @@
-# Directory to install toolchain to, by default inside current dir.
-TOOLCHAIN = $(TOP)/xtensa-lx106-elf
-
 .PHONY: crosstool-NG toolchain libhal libcirom
 
+TOOLCHAIN = $(TOP)/xtensa-lx106-elf
 TOP = $(PWD)
 SHELL = /bin/bash
 PATCH = patch -b -N
 UNZIP = unzip -q -o
 
-all: libcirom toolchain $(TOOLCHAIN)/xtensa-lx106-elf/sysroot/usr/lib/libhal.a $(TOOLCHAIN)/bin/xtensa-lx106-elf-gcc lwip
+all: libcirom $(TOOLCHAIN)/xtensa-lx106-elf/sysroot/usr/lib/libhal.a $(TOOLCHAIN)/bin/xtensa-lx106-elf-gcc lwip
+	@echo
 	@echo "Xtensa toolchain is built, to use it:"
-
+	@echo 'export PATH=$(TOOLCHAIN)/bin:$$PATH'
+	@echo
 
 clean:
 	$(MAKE) -C crosstool-NG clean MAKELEVEL=0
-	$(MAKE) -C esp-open-lwip -f Makefile.open clean
 	-rm -f crosstool-NG/.built
 	-rm -rf crosstool-NG/.build/src
 	-rm -f crosstool-NG/local-patches/gcc/4.8.5/1000-*
 	-rm -rf $(TOOLCHAIN)
-
-clean-sysroot:
-	rm -rf $(TOOLCHAIN)/xtensa-lx106-elf/sysroot/usr/lib/*
-	rm -rf $(TOOLCHAIN)/xtensa-lx106-elf/sysroot/usr/include/*
+	$(MAKE) -C esp-open-lwip -f Makefile.open clean
 
 toolchain $(TOOLCHAIN)/bin/xtensa-lx106-elf-gcc $(TOOLCHAIN)/xtensa-lx106-elf/sysroot/lib/libc.a: crosstool-NG/.built
 
@@ -38,8 +34,8 @@ _toolchain:
 	cat ../crosstool-config-overrides >> .config
 	./ct-ng build
 
-
 crosstool-NG: crosstool-NG/ct-ng
+	@echo "ok"
 
 crosstool-NG/ct-ng: crosstool-NG/bootstrap
 	$(MAKE) -C crosstool-NG -f ../Makefile _ct-ng
@@ -73,32 +69,4 @@ _libhal:
 	PATH="$(TOOLCHAIN)/bin:$(PATH)" $(MAKE) install
 
 lwip: toolchain
-	@echo 1
-# ifeq ($(STANDALONE),y)
-# 	$(MAKE) -C esp-open-lwip -f Makefile.open install \
-# 	    CC=$(TOOLCHAIN)/bin/xtensa-lx106-elf-gcc \
-# 	    AR=$(TOOLCHAIN)/bin/xtensa-lx106-elf-ar \
-# 	    PREFIX=$(TOOLCHAIN)
-# 	cp -a esp-open-lwip/include/arch esp-open-lwip/include/lwip esp-open-lwip/include/netif \
-# 	    esp-open-lwip/include/lwipopts.h \
-# 	    $(TOOLCHAIN)/xtensa-lx106-elf/sysroot/usr/include/
-# endif
 
-FRM_ERR_PATCH.rar:
-	wget --content-disposition "http://bbs.espressif.com/download/file.php?id=10"
-libssl.zip:
-	wget --content-disposition "http://bbs.espressif.com/download/file.php?id=316"
-libnet80211.zip:
-	wget --content-disposition "http://bbs.espressif.com/download/file.php?id=361"
-lib_patch_on_sdk_v1.1.0.zip:
-	wget --content-disposition "http://bbs.espressif.com/download/file.php?id=432"
-scan_issue_test.zip:
-	wget --content-disposition "http://bbs.espressif.com/download/file.php?id=525"
-libssl_patch_1.2.0-1.zip:
-	wget --content-disposition "http://bbs.espressif.com/download/file.php?id=583" -O $@
-libssl_patch_1.2.0-2.zip:
-	wget --content-disposition "http://bbs.espressif.com/download/file.php?id=586" -O $@
-libsmartconfig_2.4.2.zip:
-	wget --content-disposition "http://bbs.espressif.com/download/file.php?id=585"
-lib_mem_optimize_150714.zip:
-	wget --content-disposition "http://bbs.espressif.com/download/file.php?id=594"
